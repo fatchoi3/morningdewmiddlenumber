@@ -31,12 +31,9 @@ jobs:
 
       # 6. S3에 빌드 결과물 업로드
       - name: S3 Deploy
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --delete # S3에 있지만 로컬(dist)엔 없는 파일은 삭제
+        run: |
+          aws s3 sync dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
         env:
-          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
-          SOURCE_DIR: 'dist' # 빌드된 결과물이 들어있는 폴더
+          AWS_REGION: 'us-east-1' # 버킷 리전에 맞게 설정
