@@ -6,7 +6,7 @@ A small web game built with React, TypeScript, Vite and Socket.IO.
 - 호스트가 방을 만들고 팀 수를 설정
 - 참가자는 방 코드로 입장하고 팀 선택
 - 호스트가 게임 시작을 누르면 팀별/개인별 문제가 배정
-- 정답 개수로 팀 승패를 결정
+- 정답 개수로 팀 승패를 결정!
 
 ## 설치
 ```bash
