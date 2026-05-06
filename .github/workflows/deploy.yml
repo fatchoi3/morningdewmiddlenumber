@@ -1,0 +1,42 @@
+name: S3 Static Website Deploy
+
+on:
+  push:
+    branches: [ main ] # main 브랜치에 푸시하면 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 코드 체크아웃
+      - uses: actions/checkout@v4
+
+      # 2. 노드 환경 세팅 (최신 v4 사용)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. 의존성 설치 (권한 보존을 위해 npm ci 권장)
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Vite 실행 권한 부여 (리눅스 권한 에러 방지)
+      - name: Setup Permissions
+        run: chmod +x node_modules/.bin/vite
+
+      # 5. 프로젝트 빌드 (dist 폴더 생성)
+      - name: Build
+        run: npm run build
+
+      # 6. S3에 빌드 결과물 업로드
+      - name: S3 Deploy
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --delete # S3에 있지만 로컬(dist)엔 없는 파일은 삭제
+        env:
+          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'ap-northeast-2'
+          SOURCE_DIR: 'dist' # 빌드된 결과물이 들어있는 폴더
