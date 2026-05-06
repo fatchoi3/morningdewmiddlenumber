@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --project tsconfig.server.json && vite build",
+    "build": "vite build",
+    "build:all": "tsc --project tsconfig.server.json && vite build",
     "preview": "vite preview",
     "server": "ts-node server/index.ts",
     "start": "concurrently \"npm run server\" \"npm run dev\""
