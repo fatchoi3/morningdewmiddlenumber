@@ -1,6 +1,9 @@
-const WebSocket = require('ws')
+// const WebSocket = require('ws')
+import { WebSocketServer, WebSocket } from 'ws'
 
-const wss = new WebSocket.Server({ port: 4000 })
+const wss = new WebSocketServer({ port: 4000,
+  host: '0.0.0.0'
+})
 const rooms = new Map()
 const clients = new Map()
 
@@ -135,18 +138,45 @@ function createRoom(roomId, hostId, hostName, client) {
   return room
 }
 
+function handleCreate(ws, payload) {
+  const roomId = payload.roomId || 'room1'
+  const name = payload.name || '익명'
+  const playerId = createId()
+
+  if (rooms.has(roomId)) {
+    send(ws, 'error', { message: `방 번호 "${roomId}"는 이미 존재합니다.` })
+    return
+  }
+
+  const room = createRoom(roomId, playerId, name, ws)
+  const player = {
+    id: playerId,
+    name,
+    submitted: false,
+    number: null,
+    isWinner: false,
+  }
+
+  room.players.push(player)
+  clients.set(ws, { roomId, playerId, name })
+
+  send(ws, 'joined', { playerId, room: serializeRoom(room) })
+  broadcast(room, room.message)
+}
+
 function joinRoom(ws, payload) {
   const roomId = payload.roomId || 'room1'
   const name = payload.name || '익명'
-  let room = rooms.get(roomId)
+  const room = rooms.get(roomId)
   const playerId = createId()
 
   if (!room) {
-    room = createRoom(roomId, playerId, name, ws)
-  } else {
-    room.clients.add(ws)
-    room.message = `${name}님이 방에 참가했습니다.`
+    send(ws, 'error', { message: `방 번호 "${roomId}"를 찾을 수 없습니다.` })
+    return
   }
+
+  room.clients.add(ws)
+  room.message = `${name}님이 방에 참가했습니다.`
 
   const player = {
     id: playerId,
@@ -268,6 +298,9 @@ wss.on('connection', (ws) => {
 
     const { type, payload } = data
     switch (type) {
+      case 'create':
+        handleCreate(ws, payload)
+        break
       case 'join':
         joinRoom(ws, payload)
         break

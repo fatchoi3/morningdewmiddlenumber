@@ -19,7 +19,9 @@ function App() {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('방에 참가하여 게임을 시작하세요.')
   const [connectionKey, setConnectionKey] = useState(0)
+  const [showCreateRoom, setShowCreateRoom] = useState(false)
   const socketRef = useRef(null)
+  const titleTapTimesRef = useRef([])
 
   useEffect(() => {
     const ws = new WebSocket('ws://13.124.25.249:4000')
@@ -84,6 +86,30 @@ function App() {
         console.warn('Unknown message', data)
         break
     }
+  }
+
+  const handleTitleTap = () => {
+    if (me) return
+    const now = Date.now()
+    titleTapTimesRef.current.push(now)
+    titleTapTimesRef.current = titleTapTimesRef.current.filter((t) => now - t <= 800)
+    if (titleTapTimesRef.current.length >= 5) {
+      titleTapTimesRef.current = []
+      setShowCreateRoom((prev) => !prev)
+    }
+  }
+
+  const createRoom = () => {
+    if (!connected) {
+      setError('서버에 연결되어 있어야 합니다.')
+      return
+    }
+    if (!name.trim()) {
+      setError('이름을 입력해주세요.')
+      return
+    }
+    setError('')
+    sendMessage('create', { roomId: roomId.trim() || DEFAULT_ROOM, name: name.trim() })
   }
 
   const joinRoom = () => {
@@ -152,7 +178,7 @@ function App() {
   return (
     <div className="app-shell">
       <header>
-        <h1>숫자 중앙 게임</h1>
+        <h1 onClick={handleTitleTap} style={{ userSelect: 'none', cursor: 'default' }}>숫자 중앙 게임</h1>
         <p>모든 참가자가 숫자를 한 번 입력하거나 호스트가 중지를 누르면 가장 가운데에 가까운 사람이 승리합니다.</p>
       </header>
 
@@ -169,6 +195,11 @@ function App() {
           <button onClick={joinRoom} disabled={!connected}>
             참가하기
           </button>
+          {showCreateRoom && (
+            <button onClick={createRoom} disabled={!connected}>
+              방만들기
+            </button>
+          )}
           <div className="status-row">
             <span>{status}</span>
             <span>{info}</span>
