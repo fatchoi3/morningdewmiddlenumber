@@ -22,7 +22,8 @@ function App() {
   const socketRef = useRef(null)
 
   useEffect(() => {
-    const ws = new WebSocket(WS_URL)
+    const ws = new WebSocket('ws://13.124.25.249:4000')
+    // const ws = new WebSocket(WS_URL)
     ws.onopen = () => {
       setConnected(true)
       setStatus('서버 연결됨')
