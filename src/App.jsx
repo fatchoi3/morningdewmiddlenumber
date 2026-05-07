@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-const WS_URL = 'ws://localhost:4000'
+const WS_URL = import.meta.env.VITE_WS_URL;
 const DEFAULT_ROOM = 'room1'
 
 function createRandomName() {

@@ -288,4 +288,4 @@ wss.on('connection', (ws) => {
   ws.on('close', () => leaveRoom(ws))
 })
 
-console.log('WebSocket 서버가 4000 포트에서 실행 중입니다.')
+console.log('middle number 서버가 4000 포트에서 실행 중입니다.')
